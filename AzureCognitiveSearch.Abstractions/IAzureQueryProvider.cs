@@ -6,5 +6,5 @@ public interface IAzureQueryProvider
 {
     public IAzureQueryable<TResult> CreateQuery<TResult>(Expression expression);
     
-    public Task<PaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression);
+    public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression);
 }
