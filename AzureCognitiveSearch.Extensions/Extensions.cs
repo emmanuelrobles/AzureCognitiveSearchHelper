@@ -163,13 +163,13 @@ public static class Extensions
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <returns></returns>
-    public static IOrderedAzureQueryable<TKey> OrderBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+    public static IOrderedAzureQueryable<TSource> OrderBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
             new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderBy).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
-        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
@@ -185,13 +185,13 @@ public static class Extensions
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <returns></returns>
-    public static IOrderedAzureQueryable<TKey> OrderByDesc<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+    public static IOrderedAzureQueryable<TSource> OrderByDesc<TSource, TKey>(this IAzureQueryable<TSource> queryable,
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
             new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderByDesc).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
-        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
@@ -207,14 +207,14 @@ public static class Extensions
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <returns></returns>
-    public static IOrderedAzureQueryable<TKey> ThenBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+    public static IOrderedAzureQueryable<TSource> ThenBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
             new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(ThenBy).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
         
-        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
