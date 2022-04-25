@@ -4,7 +4,7 @@ using AzureCognitiveSearch.Abstractions;
 
 namespace AzureCognitiveSearch.Extensions;
 
-public static class Helpers
+public static class Extensions
 {
      /// <summary>
     /// Add Filters to Expression tree
@@ -13,7 +13,7 @@ public static class Helpers
     /// <param name="expression"></param>
     /// <typeparam name="TSource"></typeparam>
     /// <returns></returns>
-    public static IAzureQueryable<TSource> Where<TSource>(this IAzureQueryable<TSource> queryable, Expression<Func<TSource, bool>> expression) where TSource : IAzureEntity
+    public static IAzureQueryable<TSource> Where<TSource>(this IAzureQueryable<TSource> queryable, Expression<Func<TSource, bool>> expression)
     {
         static MethodInfo GetMethodInfo(Type source) =>
             new Func<IAzureQueryable<TSource>, Expression<Func<TSource, bool>>, IAzureQueryable<TSource>>(Where).GetMethodInfo().GetGenericMethodDefinition()
@@ -154,7 +154,74 @@ public static class Helpers
                 queryable.Expression, Expression.Quote(selector)
             ));
     }
+    
+    /// <summary>
+    /// Orders by the properties on the query
+    /// </summary>
+    /// <param name="queryable"></param>
+    /// <param name="keySelector"></param>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <returns></returns>
+    public static IOrderedAzureQueryable<TKey> OrderBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+        Expression<Func<TSource, TKey>> keySelector)
+    {
+        static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderBy).GetMethodInfo().GetGenericMethodDefinition()
+                .MakeGenericMethod(TSource,TKey);
+        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+            Expression.Call(
+                null,
+                GetMethodInfo(typeof(TSource),typeof(TKey)),
+                queryable.Expression, Expression.Quote(keySelector)
+            ));
+    }
+    
+    /// <summary>
+    /// Orders by the properties on the query descending
+    /// </summary>
+    /// <param name="queryable"></param>
+    /// <param name="keySelector"></param>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <returns></returns>
+    public static IOrderedAzureQueryable<TKey> OrderByDesc<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+        Expression<Func<TSource, TKey>> keySelector)
+    {
+        static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderByDesc).GetMethodInfo().GetGenericMethodDefinition()
+                .MakeGenericMethod(TSource,TKey);
+        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+            Expression.Call(
+                null,
+                GetMethodInfo(typeof(TSource),typeof(TKey)),
+                queryable.Expression, Expression.Quote(keySelector)
+            ));
+    }
 
+    /// <summary>
+    /// Add another property to order
+    /// </summary>
+    /// <param name="queryable"></param>
+    /// <param name="keySelector"></param>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <returns></returns>
+    public static IOrderedAzureQueryable<TKey> ThenBy<TSource, TKey>(this IAzureQueryable<TSource> queryable,
+        Expression<Func<TSource, TKey>> keySelector)
+    {
+        static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(ThenBy).GetMethodInfo().GetGenericMethodDefinition()
+                .MakeGenericMethod(TSource,TKey);
+        
+        return (IOrderedAzureQueryable<TKey>) queryable.Provider.CreateQuery<TKey>(
+            Expression.Call(
+                null,
+                GetMethodInfo(typeof(TSource),typeof(TKey)),
+                queryable.Expression, Expression.Quote(keySelector)
+            ));
+    }
+    
     /// <summary>
     /// Will run the query
     /// </summary>
