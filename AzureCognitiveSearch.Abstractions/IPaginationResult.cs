@@ -1,7 +1,7 @@
 namespace AzureCognitiveSearch.Abstractions;
 
-public interface IPaginationResult<T>
+public interface IPaginationResult<out TResult>
 {
     public long? Count { get; }
-    public IAsyncEnumerable<T>? Items { get; }
+    public IAsyncEnumerable<TResult>? Items { get; }
 }
