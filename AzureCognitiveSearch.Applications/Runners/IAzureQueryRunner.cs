@@ -3,7 +3,7 @@ using AzureCognitiveSearch.Abstractions;
 
 namespace AzureCognitiveSearch.Applications.Context;
 
-public interface IAzureContext
+public interface IAzureQueryRunner
 {
     Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression);
 }
