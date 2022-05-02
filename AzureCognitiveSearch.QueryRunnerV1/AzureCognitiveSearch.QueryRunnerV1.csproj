@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AzureCognitiveSearch.Applications\AzureCognitiveSearch.Applications.csproj" />
+      <ProjectReference Include="..\AzureCognitiveSearch.Extensions\AzureCognitiveSearch.Extensions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Azure.Search.Documents" Version="11.3.0" />
+    </ItemGroup>
+
+</Project>

@@ -4,7 +4,7 @@ using AzureCognitiveSearch.Abstractions;
 
 namespace AzureCognitiveSearch.Extensions;
 
-public static class Extensions
+public static class ExpressionExtensions
 {
      /// <summary>
     /// Add Filters to Expression tree
