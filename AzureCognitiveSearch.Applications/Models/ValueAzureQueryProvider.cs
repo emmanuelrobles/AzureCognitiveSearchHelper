@@ -1,26 +1,28 @@
 using System.Linq.Expressions;
 using AzureCognitiveSearch.Abstractions;
-using AzureCognitiveSearch.Application.Models;
-using AzureCognitiveSearch.Applications.Context;
+using AzureCognitiveSearch.Applications.Runners;
 
 namespace AzureCognitiveSearch.Applications.Models;
 
+/// <summary>
+/// Query provider implementation
+/// </summary>
 public readonly struct ValueAzureQueryProvider : IAzureQueryProvider
 {
-    private readonly IAzureContext _context;
+    private readonly IAzureQueryRunner _queryRunner;
 
-    public ValueAzureQueryProvider(IAzureContext context)
+    public ValueAzureQueryProvider(IAzureQueryRunner queryRunner)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _queryRunner = queryRunner ?? throw new ArgumentNullException(nameof(queryRunner));
     }
 
     public IAzureQueryable<TResult> CreateQuery<TResult>(Expression expression)
     {
-        return new ValueAzureQueryable<TResult>(this, expression);
+        return new AzureQueryable<TResult>(this, expression);
     }
 
     public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression)
     {
-        return _context.ExecuteAsync<TResult>(expression);
+        return _queryRunner.ExecuteAsync<TResult>(expression);
     }
 }

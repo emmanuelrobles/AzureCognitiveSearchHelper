@@ -167,9 +167,9 @@ public static class ExpressionExtensions
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
-            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderBy).GetMethodInfo().GetGenericMethodDefinition()
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IOrderedAzureQueryable<TSource>>(OrderBy).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
-        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TSource>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
@@ -189,9 +189,9 @@ public static class ExpressionExtensions
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
-            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(OrderByDesc).GetMethodInfo().GetGenericMethodDefinition()
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IOrderedAzureQueryable<TSource>>(OrderByDesc).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
-        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TSource>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
@@ -211,10 +211,10 @@ public static class ExpressionExtensions
         Expression<Func<TSource, TKey>> keySelector)
     {
         static MethodInfo GetMethodInfo(Type TSource,Type TKey) =>
-            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IAzureQueryable<TKey>>(ThenBy).GetMethodInfo().GetGenericMethodDefinition()
+            new Func<IAzureQueryable<TSource>, Expression<Func<TSource, TKey>>, IOrderedAzureQueryable<TSource>>(ThenBy).GetMethodInfo().GetGenericMethodDefinition()
                 .MakeGenericMethod(TSource,TKey);
         
-        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TKey>(
+        return (IOrderedAzureQueryable<TSource>) queryable.Provider.CreateQuery<TSource>(
             Expression.Call(
                 null,
                 GetMethodInfo(typeof(TSource),typeof(TKey)),
