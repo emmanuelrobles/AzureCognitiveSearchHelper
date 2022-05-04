@@ -15,12 +15,14 @@ public readonly struct ValueAzureQueryProvider : IAzureQueryProvider
     {
         _queryRunner = queryRunner ?? throw new ArgumentNullException(nameof(queryRunner));
     }
-
+    
+    /// <inheritdoc />
     public IAzureQueryable<TResult> CreateQuery<TResult>(Expression expression)
     {
         return new AzureQueryable<TResult>(this, expression);
     }
-
+    
+    /// <inheritdoc />
     public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression)
     {
         return _queryRunner.ExecuteAsync<TResult>(expression);
