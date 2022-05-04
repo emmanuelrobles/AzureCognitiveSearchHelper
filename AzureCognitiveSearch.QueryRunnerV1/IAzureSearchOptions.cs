@@ -5,18 +5,18 @@ namespace AzureCognitiveSearch.Context.FromNugetPackage;
 public interface IAzureSearchOptions
 {
     /// <summary>
-    /// Gets the filters to use base on a given Expression
+    /// Func that transform a filter expression to a string
     /// </summary>
-    /// <param name="expression">Expression to parse</param>
-    /// <returns>Filters</returns>
-    string TransformFilter(Expression expression);
-
+    Func<Expression, string> FilterToString { get; set; }
+    
     /// <summary>
     /// Given a quantity returns a functions that given a page will return the elements to take and skip
     /// </summary>
-    /// <param name="qty">qty per page</param>
     /// <returns>a functions that given a page will return the elements to take and skip</returns>
-    Func<uint, (uint take, uint skip)> Pagination(ushort qty);
+    Func<ushort, Func<uint, (uint take, uint skip)>> Pagination { get; set; }
 
-    public Func<Expression,string> OrderByExpression { get; set; }
+    /// <summary>
+    /// Function that handles the order by transformation
+    /// </summary>
+    Func<Expression,string> OrderByExpression { get; set; }
 }

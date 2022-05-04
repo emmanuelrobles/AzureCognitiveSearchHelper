@@ -14,3 +14,9 @@ implementations are
 ### Extensions
 
 Extension project is where the base linq like extension methods are
+
+## Query Runners
+
+### V1
+
+First implementation of a query runner, it has a lot of things that can be improved its mostly in POC state

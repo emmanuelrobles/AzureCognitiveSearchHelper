@@ -96,8 +96,8 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 // add filter to acc
                 Debug.Assert(whereExpressionWrapper != null, nameof(whereExpressionWrapper) + " != null");
                 acc.SearchOptions.Filter = string.IsNullOrEmpty(acc.SearchOptions.Filter) 
-                    ? _options.TransformFilter(whereExpressionWrapper.Body) 
-                    : $"{acc.SearchOptions.Filter} and {_options.TransformFilter(whereExpressionWrapper.Body)}";
+                    ? _options.FilterToString(whereExpressionWrapper.Body) 
+                    : $"{acc.SearchOptions.Filter} and {_options.FilterToString(whereExpressionWrapper.Body)}";
                 // return updated acc
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
             case nameof(ExpressionExtensions.WithSearchTerm):
