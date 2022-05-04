@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+    <metadata>
+        <id>AzureCognitiveSearch</id>
+        <version>0.0.4</version>
+        <title>$title$</title>
+        <authors>Emmanuel Robles</authors>
+        <owners>Emmanuel Robles</owners>
+        <description>DI package</description>
+        <dependencies>
+            <group targetFramework="net6.0" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="bin/Debug/net6.0/AzureCognitiveSearch.*.dll" target="lib\net6.0" />
+    </files>
+</package>

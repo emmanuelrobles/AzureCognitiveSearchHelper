@@ -26,3 +26,9 @@ First implementation of a query runner, it has a lot of things that can be impro
 ### OData
 
 Basic implementation of Odata filters
+
+## Dependency Injection
+
+### Standard DI
+
+project that use default dotnet DI to inject a context
