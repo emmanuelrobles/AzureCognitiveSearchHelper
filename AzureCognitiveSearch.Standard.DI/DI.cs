@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Models;
 using AzureCognitiveSearch.Abstractions;
 using AzureCognitiveSearch.Applications.Contexts;
 using AzureCognitiveSearch.Applications.Models;
@@ -22,7 +23,7 @@ class AzureSearchOptions : IAzureSearchOptions
     private static Func<uint, (uint take, uint skip)> PaginationHelper(ushort qty) =>
         page => (take: qty, skip: (page - 1) * qty);
 
-    public Func<Expression, string> FilterToString { get; set; } = Filters.TransformFilter;
+    public Func<Expression, string> FilterExpression { get; set; } = Filters.TransformFilter;
     public Func<ushort, Func<uint, (uint take, uint skip)>> Pagination { get; set; } = PaginationHelper;
     public Func<Expression, string> OrderByExpression { get; set; } = Filters.TransformFilter;
 }
@@ -54,6 +55,7 @@ public static class DI
         {
             var contextObject = (TContext)Activator.CreateInstance(typeof(TContext));
             
+            // Get the properties
             foreach (var propertyInfo in typeof(TContext).GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 var ignore = propertyInfo.GetCustomAttribute<AzureIndexIgnoreAttribute>();

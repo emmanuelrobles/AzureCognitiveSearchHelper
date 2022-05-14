@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Linq.Expressions;
 using Azure.Search.Documents;
+using Azure.Search.Documents.Models;
 using AzureCognitiveSearch.Abstractions;
 using AzureCognitiveSearch.Applications.Runners;
 using AzureCognitiveSearch.Context.FromNugetPackage;
@@ -36,6 +37,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         }
         
         
+        // Gets stream from query
         async IAsyncEnumerable<TResult> GetData(uint page,SearchClient client)
         {
             while (true)
@@ -69,11 +71,22 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 searchResult = (await client.SearchAsync<TEntity>(options.Term, options.SearchOptions));
             }
         }
-            
+
+        // initial facet mapping
+        Dictionary<string, IEnumerable<IFacetResult>> ToDomain(IDictionary<string, IList<FacetResult>> facets)
+            => facets.ToDictionary(kv => kv.Key, kv =>
+                kv.Value.Select(f => new ValueFacetResult()
+                {
+                    Count = f.Count,
+                    Value = kv.Key
+                } as IFacetResult));
+
+        // returns object
         return new ValuePaginationResult<TResult>
         {
             Count = searchResult?.Value.TotalCount,
-            Items = GetData(options.StartAtPage,_searchClient)
+            Items = GetData(options.StartAtPage,_searchClient),
+            Facets = ToDomain(searchResult.Value.Facets) 
         };
     }
     
@@ -96,8 +109,8 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 // add filter to acc
                 Debug.Assert(whereExpressionWrapper != null, nameof(whereExpressionWrapper) + " != null");
                 acc.SearchOptions.Filter = string.IsNullOrEmpty(acc.SearchOptions.Filter) 
-                    ? _options.FilterToString(whereExpressionWrapper.Body) 
-                    : $"{acc.SearchOptions.Filter} and {_options.FilterToString(whereExpressionWrapper.Body)}";
+                    ? _options.FilterExpression(whereExpressionWrapper.Body) 
+                    : $"{acc.SearchOptions.Filter} and {_options.FilterExpression(whereExpressionWrapper.Body)}";
                 // return updated acc
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
             case nameof(ExpressionExtensions.WithSearchTerm):
@@ -118,7 +131,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 // get facet expression
                 var facetExpression = methodCall.Arguments[1] as ConstantExpression;
                 // get facet value
-                var facet = facetExpression?.Value?.ToString();
+                var facet = (facetExpression?.Value as IFacetBuilder)?.BuildFacet() ?? string.Empty;
                 // if facet exist added to the list
                 if (!string.IsNullOrEmpty(facet))
                 {

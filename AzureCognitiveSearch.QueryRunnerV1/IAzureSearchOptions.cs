@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using AzureCognitiveSearch.QueryRunnerV1;
 
 namespace AzureCognitiveSearch.Context.FromNugetPackage;
 
@@ -7,7 +8,7 @@ public interface IAzureSearchOptions
     /// <summary>
     /// Func that transform a filter expression to a string
     /// </summary>
-    Func<Expression, string> FilterToString { get; set; }
+    Func<Expression, string> FilterExpression { get; set; }
     
     /// <summary>
     /// Given a quantity returns a functions that given a page will return the elements to take and skip
