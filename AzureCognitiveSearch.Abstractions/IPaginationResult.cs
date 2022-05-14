@@ -15,4 +15,9 @@ public interface IPaginationResult<out TResult>
     /// Stream of items
     /// </summary>
     public IAsyncEnumerable<TResult>? Items { get; }
+
+    /// <summary>
+    /// Dictionary with all facets
+    /// </summary>
+    public IDictionary<string,IEnumerable<IFacetResult>> Facets { get; }
 }

@@ -5,11 +5,11 @@ namespace AzureCognitiveSearch.Facets;
 /// <summary>
 /// Creates a facet from the given string
 /// </summary>
-public class RawFacet : IFacet
+public class RawFacetBuilder : IFacetBuilder
 {
     private readonly string _facetQuery;
 
-    public RawFacet(string facetQuery)
+    public RawFacetBuilder(string facetQuery)
     {
         _facetQuery = facetQuery;
     }
