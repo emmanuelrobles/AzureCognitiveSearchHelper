@@ -6,12 +6,17 @@
         <title>$title$</title>
         <authors>Emmanuel Robles</authors>
         <owners>Emmanuel Robles</owners>
-        <description>DI package</description>
+        <description>Azure cognitve search helper that provides a linq like api</description>
+        <language>en-US</language>
+        <projectUrl>https://github.com/emmanuelrobles/AzureCognitiveSearchHelper</projectUrl>
         <dependencies>
             <group targetFramework="net6.0" />
+            <dependency id="Azure.Search.Documents" version="11.3.0" />
         </dependencies>
+        <repository type="git" url="https://github.com/emmanuelrobles/AzureCognitiveSearchHelper.git" branch="master"/>
     </metadata>
     <files>
         <file src="bin/Debug/net6.0/AzureCognitiveSearch.*.dll" target="lib\net6.0" />
+        <file src="README.md" target="docs\" />
     </files>
 </package>
