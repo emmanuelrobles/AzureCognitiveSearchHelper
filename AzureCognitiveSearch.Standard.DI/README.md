@@ -1,4 +1,4 @@
-# Sample on how to use the Azure cognitive search DI
+# Azure cognitive search DI
 
 Dependency injection package
 
@@ -64,6 +64,10 @@ public class AzureContextAttributes : IAzureContext
     public IAzureQueryable<AzureModel> Set { get; set; }
 }
 ```
+
+## Sample
+
+This is a sample solution [DI sample](https://github.com/emmanuelrobles/AzureCognitiveSearchHelper/tree/master/Sample.AzureCognitiveSearch.DI)
 
 
 

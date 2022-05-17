@@ -108,6 +108,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 var whereExpressionWrapper = (methodCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
                 // add filter to acc
                 Debug.Assert(whereExpressionWrapper != null, nameof(whereExpressionWrapper) + " != null");
+                // if there is no filter just add the new filter, if there is a filter linked the new filter with AND operator
                 acc.SearchOptions.Filter = string.IsNullOrEmpty(acc.SearchOptions.Filter) 
                     ? _options.FilterExpression(whereExpressionWrapper.Body) 
                     : $"{acc.SearchOptions.Filter} and {_options.FilterExpression(whereExpressionWrapper.Body)}";
