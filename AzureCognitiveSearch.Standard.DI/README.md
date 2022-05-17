@@ -1,6 +1,6 @@
 # Sample on how to use the Azure cognitive search DI
 
-Small example app on how to use the dependency injection
+Dependency injection package
 
 ## Dependencies
 
