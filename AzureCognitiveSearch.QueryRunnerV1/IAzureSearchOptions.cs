@@ -19,5 +19,5 @@ public interface IAzureSearchOptions
     /// <summary>
     /// Function that handles the order by transformation
     /// </summary>
-    Func<Expression,string> OrderByExpression { get; set; }
+    Func<MemberExpression,string> OrderByExpression { get; set; }
 }
