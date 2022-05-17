@@ -73,20 +73,20 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         }
 
         // initial facet mapping
-        Dictionary<string, IEnumerable<IFacetResult>> ToDomain(IDictionary<string, IList<FacetResult>> facets)
-            => facets.ToDictionary(kv => kv.Key, kv =>
+        Dictionary<string, IEnumerable<IFacetResult>>? ToDomain(IDictionary<string, IList<FacetResult>>? facets)
+            => facets?.ToDictionary(kv => kv.Key, kv =>
                 kv.Value.Select(f => new ValueFacetResult()
                 {
                     Count = f.Count,
                     Value = kv.Key
-                } as IFacetResult));
+                } as IFacetResult)) ?? null;
 
         // returns object
         return new ValuePaginationResult<TResult>
         {
             Count = searchResult?.Value.TotalCount,
             Items = GetData(options.StartAtPage,_searchClient),
-            Facets = ToDomain(searchResult.Value.Facets) 
+            Facets = ToDomain(searchResult?.Value.Facets) 
         };
     }
     
@@ -177,7 +177,8 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 var lambdaOrderByAsc = (methodCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
                 // add toList
                 Debug.Assert(lambdaOrderByAsc != null, nameof(lambdaOrderByAsc) + " != null");
-                acc.SearchOptions.OrderBy.Add($"{_options.OrderByExpression(lambdaOrderByAsc.Body)}");
+                acc.SearchOptions.OrderBy.Add(
+                    $"{_options.OrderByExpression(lambdaOrderByAsc.Body as MemberExpression ?? throw new InvalidOperationException("Not a valid OrderBy Expression"))}");
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
             case nameof(ExpressionExtensions.OrderByDesc):
                 // clear the list
@@ -186,7 +187,8 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 var lambdaOrderByDesc = (methodCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
                 // add toList
                 Debug.Assert(lambdaOrderByDesc != null, nameof(lambdaOrderByDesc) + " != null");
-                acc.SearchOptions.OrderBy.Add($"{_options.OrderByExpression(lambdaOrderByDesc.Body)} desc");
+                acc.SearchOptions.OrderBy.Add(
+                    $"{_options.OrderByExpression(lambdaOrderByDesc.Body as MemberExpression ?? throw new InvalidOperationException("Not a valid OrderBy Expression"))} desc");
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
             
             case nameof(ExpressionExtensions.ThenBy):
@@ -194,7 +196,8 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 var lambdaThenBy = (methodCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
                 // add toList
                 Debug.Assert(lambdaThenBy != null, nameof(lambdaThenBy) + " != null");
-                acc.SearchOptions.OrderBy.Add($"{_options.OrderByExpression(lambdaThenBy.Body)}");
+                acc.SearchOptions.OrderBy.Add(
+                    $"{_options.OrderByExpression(lambdaThenBy.Body as MemberExpression ?? throw new InvalidOperationException("Not a valid OrderBy Expression"))}");
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
         }
 

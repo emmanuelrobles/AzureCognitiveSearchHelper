@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 namespace AzureCognitiveSearch.Abstractions;
 
 /// <summary>
-/// 
+/// Azure query
 /// </summary>
 /// <typeparam name="TSource"></typeparam>
 public interface IAzureQueryable<TSource>
