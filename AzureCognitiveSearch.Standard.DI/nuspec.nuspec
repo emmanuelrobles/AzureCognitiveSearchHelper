@@ -10,8 +10,7 @@
         <language>en-US</language>
         <projectUrl>https://github.com/emmanuelrobles/AzureCognitiveSearchHelper</projectUrl>
         <dependencies>
-            <group targetFramework="net6.0" />
-            <dependency id="Azure.Search.Documents" version="11.3.0" />
+            <group targetFramework="net6.0"/>
         </dependencies>
         <repository type="git" url="https://github.com/emmanuelrobles/AzureCognitiveSearchHelper.git" branch="master"/>
     </metadata>
