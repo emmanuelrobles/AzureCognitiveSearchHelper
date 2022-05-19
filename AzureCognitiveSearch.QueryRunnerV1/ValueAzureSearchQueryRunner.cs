@@ -28,6 +28,12 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         var options = GetOptions(expression, ref baseOptions);
         var paginationFunc = _options.Pagination(options.ItemsPerPage);
 
+        // sets starting page
+        var (take, skip) = paginationFunc(options.StartAtPage);
+        options.SearchOptions.Skip = (int?)skip ?? throw new ArgumentException("Invalid skip value");
+        options.SearchOptions.Size = (int?)take ?? throw new ArgumentException("Invalid take value");
+
+        // run query
         var searchResult = await _searchClient.SearchAsync<TEntity>(options.Term, options.SearchOptions);
 
         //TODO throw better exception
