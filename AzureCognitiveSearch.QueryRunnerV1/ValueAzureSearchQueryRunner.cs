@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Models;
 using AzureCognitiveSearch.Abstractions;
+using AzureCognitiveSearch.Applications.Enums;
 using AzureCognitiveSearch.Applications.Runners;
 using AzureCognitiveSearch.Context.FromNugetPackage;
 using AzureCognitiveSearch.Extensions;
@@ -48,7 +49,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         {
             while (true)
             {
-
+                
                 var count = 0;
                 await foreach (var product in searchResult.Value.GetResultsAsync())
                 {
@@ -74,14 +75,14 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 options.SearchOptions.Skip = (int?)skip ?? throw new ArgumentException("Invalid skip value");
                 options.SearchOptions.Size = (int?)take ?? throw new ArgumentException("Invalid take value");
                 
-                searchResult = (await client.SearchAsync<TEntity>(options.Term, options.SearchOptions));
+                searchResult = await client.SearchAsync<TEntity>(options.Term, options.SearchOptions);
             }
         }
 
         // initial facet mapping
         Dictionary<string, IEnumerable<IFacetResult>>? ToDomain(IDictionary<string, IList<FacetResult>>? facets)
             => facets?.ToDictionary(kv => kv.Key, kv =>
-                kv.Value.Select(f => new ValueFacetResult()
+                kv.Value.Select(f => new ValueFacetResult
                 {
                     Count = f.Count,
                     Value = kv.Key
@@ -197,7 +198,6 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 acc.SearchOptions.OrderBy.Add(
                     $"{_options.OrderByExpression(lambdaOrderByDesc.Body as MemberExpression ?? throw new InvalidOperationException("Not a valid OrderBy Expression"))} desc");
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
-            
             case nameof(ExpressionExtensions.ThenBy):
                 // get expression
                 var lambdaThenBy = (methodCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
@@ -205,6 +205,30 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 Debug.Assert(lambdaThenBy != null, nameof(lambdaThenBy) + " != null");
                 acc.SearchOptions.OrderBy.Add(
                     $"{_options.OrderByExpression(lambdaThenBy.Body as MemberExpression ?? throw new InvalidOperationException("Not a valid OrderBy Expression"))}");
+                return ref GetOptions(methodCall.Arguments[0], ref acc);
+            case nameof(ExpressionExtensions.WithSearchMode):
+                // get search mode value
+                var searchMode = (SearchModeEnum)(methodCall.Arguments[1] as ConstantExpression).Value;
+                // set search mode in options
+                acc.SearchOptions.SearchMode = searchMode is SearchModeEnum.All ? SearchMode.All : SearchMode.Any;
+                return ref GetOptions(methodCall.Arguments[0], ref acc);
+            case nameof(ExpressionExtensions.WithQueryType):
+                // get query type value
+                var queryType = (QueryTypeEnum)(methodCall.Arguments[1] as ConstantExpression).Value;
+                // set query type in options
+                acc.SearchOptions.QueryType = queryType == QueryTypeEnum.Full ? SearchQueryType.Full : SearchQueryType.Simple;
+                return ref GetOptions(methodCall.Arguments[0], ref acc);
+            case nameof(ExpressionExtensions.WithScoringProfile):
+                // get scoring profile
+                var scoringProfile = (string)(methodCall.Arguments[1] as ConstantExpression).Value;
+                // set scoring profile in options
+                acc.SearchOptions.ScoringProfile = scoringProfile;
+                return ref GetOptions(methodCall.Arguments[0], ref acc);
+            case nameof(QueryRunnerExtensions.WithSearchOptions):
+                // get scoring profile
+                var searchOptionsCallback = (Func<SearchOptions,SearchOptions>)(methodCall.Arguments[1] as ConstantExpression).Value;
+                // set scoring profile in options
+                acc.SearchOptions = searchOptionsCallback.Invoke(acc.SearchOptions);
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
         }
 
