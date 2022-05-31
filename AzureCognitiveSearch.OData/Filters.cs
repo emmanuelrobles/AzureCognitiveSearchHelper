@@ -161,13 +161,18 @@ public static class Filters
 
         return expression.ToString();
     }
-    
+    /// <summary>
+    /// Private structure for odata parser
+    /// </summary>
     private struct ValueTransformOptions
     {
         public ValueTransformOptions()
         {
         }
 
+        /// <summary>
+        /// Set the member access to no parse the first parent if true
+        /// </summary>
         public bool MemberAccessIgnoreParent { get; init; } = true;
     }
 }
