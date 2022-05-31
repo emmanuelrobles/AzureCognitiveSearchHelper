@@ -80,9 +80,15 @@ public class FilterTest
     [Fact]
     public void Func_Any_Test()
     {
-        var s = "S";
         Assert.Equal("TypeArray/any()",
             FilterExpressionWrapper<MyClass>(i => i.TypeArray.Any()));
+    }
+    
+    [Fact]
+    public void Func_Any_WithParams_Test()
+    {
+        Assert.Equal("ComplexArray/any(e:(e/TypeInt eq 4))",
+            FilterExpressionWrapper<MyClass>(i => i.ComplexArray.Any(e => e.TypeInt == 4)));
     }
 }
 
@@ -92,6 +98,7 @@ class MyClass
     public int TypeInt { get; set; }
     public MyClassB TypeClass { get; set; }
     public IEnumerable<int> TypeArray { get; set; }
+    public IEnumerable<MyClassB> ComplexArray { get; set; }
 }
 
 class MyClassB
