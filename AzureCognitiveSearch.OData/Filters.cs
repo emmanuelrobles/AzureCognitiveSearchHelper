@@ -7,7 +7,7 @@ public static class Filters
     public static string TransformFilter(Expression filter)
     {
         //Handle expression types
-        static string Transform(Expression expression)
+        static string Transform(Expression expression,ref ValueTransformOptions options)
         {
             switch (expression.NodeType)
             {
@@ -17,15 +17,16 @@ public static class Filters
                     return expression.ToString();
                 case ExpressionType.MemberAccess:
                     var memberExpression = expression as MemberExpression;
-                    return MemberToString(memberExpression);
+                    return MemberToString(memberExpression, options.MemberAccessIgnoreParent);
                 case ExpressionType.Call:
                     return CallToString(expression as MethodCallExpression);
                 case ExpressionType.Lambda:
                     var lambdaExpression = expression as LambdaExpression;
-                    return $"{lambdaExpression.Parameters[0]}:{Transform(lambdaExpression.Body)}";
+                    var valueTransformOptions = (new ValueTransformOptions { MemberAccessIgnoreParent = false });
+                    return $"{lambdaExpression.Parameters[0]}:{Transform(lambdaExpression.Body, ref valueTransformOptions)}";
                 case ExpressionType.Convert:
                     var convertUnary = expression as UnaryExpression;
-                    return Transform(convertUnary.Operand);
+                    return Transform(convertUnary.Operand, ref options);
                 case ExpressionType.GreaterThan:
                 case ExpressionType.GreaterThanOrEqual:
                 case ExpressionType.LessThan:
@@ -36,7 +37,7 @@ public static class Filters
                 case ExpressionType.NotEqual:
                     var be = expression as BinaryExpression;
                     return
-                        $"({Transform(be.Left)} {BinaryExpressionToString(expression.NodeType)} {Transform(be.Right)})";
+                        $"({Transform(be.Left, ref options)} {BinaryExpressionToString(expression.NodeType)} {Transform(be.Right, ref options)})";
                 default:
                     throw new ArgumentException($"Expression expression not define: {expression.NodeType}");
             }
@@ -61,8 +62,11 @@ public static class Filters
         }
 
         //Handles methods
+
         static string CallToString(MethodCallExpression? expression)
         {
+            var valueTransformOptions = new ValueTransformOptions();
+
             var callExpression = expression as MethodCallExpression;
             switch (expression.Method.Name)
             {
@@ -71,13 +75,13 @@ public static class Filters
                     var bodyAny = callExpression.Arguments.Count > 1
                         ? callExpression.Arguments[1] as LambdaExpression
                         : null;
-                    return $"{Transform(callerAny)}/any({(bodyAny != null ? Transform(bodyAny) : "")})";
+                    return $"{MemberToString(callerAny)}/any({(bodyAny != null ? Transform(bodyAny, ref valueTransformOptions) : "")})";
                 case "All":
                     var callerAll = callExpression.Arguments[0] as MemberExpression;
                     var bodyAll = callExpression.Arguments.Count > 1
                         ? callExpression.Arguments[1] as LambdaExpression
                         : null;
-                    return $"{Transform(callerAll)}/any({(bodyAll != null ? Transform(bodyAll) : "")})";
+                    return $"{MemberToString(callerAll)}/any({(bodyAll != null ? Transform(bodyAll,ref valueTransformOptions) : "")})";
                 case "AzureSearchIn":
 
                     T CompileLambda<T>(Expression e)
@@ -90,7 +94,7 @@ public static class Filters
                     var value_to_compare = callExpression.Arguments[0] as MemberExpression;
                     var array = CompileLambda<IEnumerable<string>>(callExpression.Arguments[1]);
                     var delimiter = CompileLambda<string>(callExpression.Arguments[2]);
-                    return $"search.in({Transform(value_to_compare)}, " +
+                    return $"search.in({Transform(value_to_compare,ref valueTransformOptions)}, " +
                            $"'{String.Join(delimiter, array)}', " +
                            $"'{delimiter}')";
             }
@@ -99,7 +103,7 @@ public static class Filters
         }
         
         // member function to string
-        static string MemberToString(MemberExpression expression)
+        static string MemberToString(MemberExpression expression, bool ignoreParent = true)
         {
             (string expression, bool compiled) MemberStringHelper(MemberExpression? subExpression)
             {
@@ -112,7 +116,7 @@ public static class Filters
                 // if subexpression is a constant compile whole expression
                 if (subExpression.Expression.NodeType is ExpressionType.Constant)
                 {
-                    return (Filters.GetValueFromConstant(Expression.Constant(InvokeExpression(expression))), true);
+                    return (GetValueFromConstant(Expression.Constant(InvokeExpression(expression))), true);
                 }
 
                 var childExpression = MemberStringHelper(subExpression.Expression as MemberExpression);
@@ -121,11 +125,12 @@ public static class Filters
                     return (childExpression.expression, true);
                 }
 
-                var parentExpression = "";
-                if (subExpression.Expression.NodeType is ExpressionType.MemberAccess)
+                var parentExpression = subExpression.Expression.NodeType switch
                 {
-                    parentExpression = $"{childExpression.expression}/";
-                }
+                    ExpressionType.Parameter => ignoreParent ? "" : (subExpression.Expression as ParameterExpression)?.Name +"/",
+                    ExpressionType.MemberAccess => childExpression.expression+ "/",
+                    _ => throw new ArgumentException("Expression not handle in member access")
+                };
 
                 return ($"{parentExpression}{subExpression.Member.Name}", false);
             }
@@ -135,8 +140,9 @@ public static class Filters
 
         // invokes an expression dynamically
         static object? InvokeExpression(Expression expression) => Expression.Lambda(expression).Compile().DynamicInvoke();
-        
-        return Transform(filter);
+
+        var valueTransformOptions = new ValueTransformOptions();
+        return Transform(filter, ref valueTransformOptions);
     }
     
     //Process constant values
@@ -154,5 +160,14 @@ public static class Filters
         }
 
         return expression.ToString();
+    }
+    
+    private struct ValueTransformOptions
+    {
+        public ValueTransformOptions()
+        {
+        }
+
+        public bool MemberAccessIgnoreParent { get; init; } = true;
     }
 }
