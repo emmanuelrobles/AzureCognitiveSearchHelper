@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using AzureCognitiveSearch.Abstractions;
-using AzureCognitiveSearch.Applications.Enums;
 
 namespace AzureCognitiveSearch.Extensions;
 
@@ -223,69 +222,6 @@ public static class ExpressionExtensions
             ));
     }
 
-    /// <summary>
-    /// Sets Azure search mode
-    /// </summary>
-    /// <param name="queryable"></param>
-    /// <param name="searchMode"></param>
-    /// <typeparam name="TSource"></typeparam>
-    /// <returns></returns>
-    public static IAzureQueryable<TSource> WithSearchMode<TSource>(this IAzureQueryable<TSource> queryable, SearchModeEnum searchMode)
-    {
-        static MethodInfo GetMethodInfo(Type TSource) =>
-            new Func<IAzureQueryable<TSource>, SearchModeEnum, IAzureQueryable<TSource>>(WithSearchMode).GetMethodInfo().GetGenericMethodDefinition()
-                .MakeGenericMethod(TSource);
-        
-        return queryable.Provider.CreateQuery<TSource>(
-            Expression.Call(
-                null,
-                GetMethodInfo(typeof(TSource)),
-                queryable.Expression, Expression.Constant(searchMode)
-            ));
-    }
-
-    /// <summary>
-    /// Sets Azure query mode
-    /// </summary>
-    /// <param name="queryable"></param>
-    /// <param name="queryType"></param>
-    /// <typeparam name="TSource"></typeparam>
-    /// <returns></returns>
-    public static IAzureQueryable<TSource> WithQueryType<TSource>(this IAzureQueryable<TSource> queryable, QueryTypeEnum queryType)
-    {
-        static MethodInfo GetMethodInfo(Type TSource) =>
-            new Func<IAzureQueryable<TSource>, QueryTypeEnum, IAzureQueryable<TSource>>(WithQueryType).GetMethodInfo().GetGenericMethodDefinition()
-                .MakeGenericMethod(TSource);
-        
-        return queryable.Provider.CreateQuery<TSource>(
-            Expression.Call(
-                null,
-                GetMethodInfo(typeof(TSource)),
-                queryable.Expression, Expression.Constant(queryType)
-            ));
-    }
-    
-    /// <summary>
-    /// Sets Azure scoring profile
-    /// </summary>
-    /// <param name="queryable"></param>
-    /// <param name="scoringProfile"></param>
-    /// <typeparam name="TSource"></typeparam>
-    /// <returns></returns>
-    public static IAzureQueryable<TSource> WithScoringProfile<TSource>(this IAzureQueryable<TSource> queryable, string scoringProfile)
-    {
-        static MethodInfo GetMethodInfo(Type TSource) =>
-            new Func<IAzureQueryable<TSource>, string, IAzureQueryable<TSource>>(WithScoringProfile).GetMethodInfo().GetGenericMethodDefinition()
-                .MakeGenericMethod(TSource);
-        
-        return queryable.Provider.CreateQuery<TSource>(
-            Expression.Call(
-                null,
-                GetMethodInfo(typeof(TSource)),
-                queryable.Expression, Expression.Constant(scoringProfile)
-            ));
-    }
-    
     /// <summary>
     /// Will run the query
     /// </summary>
