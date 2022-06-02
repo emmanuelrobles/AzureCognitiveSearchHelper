@@ -12,7 +12,8 @@ public interface IAzureQueryRunner
     /// Runs a given expression
     /// </summary>
     /// <param name="expression"></param>
+    /// <param name="token"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression);
+    Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression, CancellationToken token);
 }

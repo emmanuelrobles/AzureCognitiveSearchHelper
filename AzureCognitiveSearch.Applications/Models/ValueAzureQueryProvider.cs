@@ -23,8 +23,8 @@ public readonly struct ValueAzureQueryProvider : IAzureQueryProvider
     }
     
     /// <inheritdoc />
-    public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression)
+    public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
     {
-        return _queryRunner.ExecuteAsync<TResult>(expression);
+        return _queryRunner.ExecuteAsync<TResult>(expression, token);
     }
 }

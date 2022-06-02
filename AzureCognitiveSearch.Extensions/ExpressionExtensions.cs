@@ -228,8 +228,8 @@ public static class ExpressionExtensions
     /// <param name="queryable"></param>
     /// <typeparam name="TSource"></typeparam>
     /// <returns></returns>
-    public static Task<IPaginationResult<TSource>> RunAsync<TSource>(this IAzureQueryable<TSource> queryable)
+    public static Task<IPaginationResult<TSource>> RunAsync<TSource>(this IAzureQueryable<TSource> queryable, CancellationToken token)
     {
-        return queryable.Provider.ExecuteAsync<TSource>(queryable.Expression);
+        return queryable.Provider.ExecuteAsync<TSource>(queryable.Expression, token);
     }
 }

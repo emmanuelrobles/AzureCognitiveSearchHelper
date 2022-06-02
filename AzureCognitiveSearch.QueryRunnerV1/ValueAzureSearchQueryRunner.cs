@@ -22,7 +22,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
     }
 
 
-    public async Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression)
+    public async Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
     {
         var baseOptions = new ValueOptions();
         var options = GetOptions(expression, ref baseOptions);
@@ -34,7 +34,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         options.SearchOptions.Size = (int?)take ?? throw new ArgumentException("Invalid take value");
 
         // run query
-        var searchResult = await _searchClient.SearchAsync<TEntity>(options.Term, options.SearchOptions);
+        var searchResult = await _searchClient.SearchAsync<TEntity>(options.Term, options.SearchOptions, token);
 
         //TODO throw better exception
         if (searchResult?.Value is null)
@@ -44,7 +44,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         
         
         // Gets stream from query
-        async IAsyncEnumerable<TResult> GetData(uint page,SearchClient client)
+        async IAsyncEnumerable<TResult> GetData(uint page,SearchClient client, CancellationToken token)
         {
             while (true)
             {
@@ -54,10 +54,11 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 {
                     count++;
                     object toReturn = product.Document;
-                    foreach (var lambdaExpression in options.Selectable)
+                    if (options.Selectable is not null)
                     {
-                        toReturn = lambdaExpression.Compile().DynamicInvoke(toReturn);
+                        toReturn = options.Selectable(toReturn);
                     }
+                    
                     yield return (TResult)toReturn;
                 }
 
@@ -74,7 +75,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 options.SearchOptions.Skip = (int?)skip ?? throw new ArgumentException("Invalid skip value");
                 options.SearchOptions.Size = (int?)take ?? throw new ArgumentException("Invalid take value");
                 
-                searchResult = await client.SearchAsync<TEntity>(options.Term, options.SearchOptions);
+                searchResult = await client.SearchAsync<TEntity>(options.Term, options.SearchOptions, token);
             }
         }
 
@@ -91,7 +92,7 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         return new ValuePaginationResult<TResult>
         {
             Count = searchResult?.Value.TotalCount,
-            Items = GetData(options.StartAtPage,_searchClient),
+            Items = GetData(options.StartAtPage,_searchClient, token),
             Facets = ToDomain(searchResult?.Value.Facets) 
         };
     }
@@ -173,7 +174,13 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 if ((methodCall.Arguments[1] as UnaryExpression)?.Operand is LambdaExpression selectExpression)
                 {
                     // add to select pipe
-                    acc.Selectable.AddFirst(selectExpression);
+                    if (acc.Selectable is null)
+                        acc.Selectable = o => selectExpression.Compile().DynamicInvoke(o);
+                    else
+                    {
+                        var options = acc;
+                        acc.Selectable =o => options.Selectable(selectExpression.Compile().DynamicInvoke(o));
+                    }
                 }
                 // solve rest of expressions
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
@@ -231,10 +238,11 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         /// Term to use
         /// </summary>
         public string Term { get; set; } = "*";
+
         /// <summary>
         /// Selectable pipe
         /// </summary>
-        public LinkedList<LambdaExpression> Selectable { get; set; } = new LinkedList<LambdaExpression>();
+        public Func<object,object> Selectable { get; set; } = null;
         /// <summary>
         /// How many Items per page
         /// </summary>

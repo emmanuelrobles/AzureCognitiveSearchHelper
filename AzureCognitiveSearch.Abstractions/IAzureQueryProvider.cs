@@ -14,12 +14,13 @@ public interface IAzureQueryProvider
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     public IAzureQueryable<TResult> CreateQuery<TResult>(Expression expression);
-    
+
     /// <summary>
     /// Runs a query async
     /// </summary>
     /// <param name="expression"></param>
+    /// <param name="token"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression);
+    public Task<IPaginationResult<TResult>> ExecuteAsync<TResult>(Expression expression, CancellationToken token);
 }
