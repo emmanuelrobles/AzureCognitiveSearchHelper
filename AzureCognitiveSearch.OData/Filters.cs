@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using AzureCognitiveSearch.OData.ExpressionVisitors;
 
 namespace AzureCognitiveSearch.OData;
 
@@ -67,22 +68,26 @@ public static class Filters
         {
             var valueTransformOptions = new ValueTransformOptions();
 
+            // header visitor
+            var expressionHeaderVisitor = new FunctionHeaderExpressionVisitor();
+            var expressionBodyVisitor = new FunctionsBodyExpressionVisitor();
+            
             var callExpression = expression as MethodCallExpression;
             switch (expression.Method.Name)
             {
-                case "Any":
-                    var callerAny = callExpression.Arguments[0] as MemberExpression;
+                case nameof(Enumerable.Any):
+                    var callerAny = expressionHeaderVisitor.Visit(callExpression.Arguments[0]) as MemberExpression;
                     var bodyAny = callExpression.Arguments.Count > 1
-                        ? callExpression.Arguments[1] as LambdaExpression
+                        ? expressionBodyVisitor.Visit(callExpression.Arguments[1])
                         : null;
                     return $"{MemberToString(callerAny)}/any({(bodyAny != null ? Transform(bodyAny, ref valueTransformOptions) : "")})";
-                case "All":
+                case nameof(Enumerable.All):
                     var callerAll = callExpression.Arguments[0] as MemberExpression;
                     var bodyAll = callExpression.Arguments.Count > 1
-                        ? callExpression.Arguments[1] as LambdaExpression
+                        ? new FunctionsBodyExpressionVisitor().Visit(callExpression.Arguments[1])
                         : null;
                     return $"{MemberToString(callerAll)}/any({(bodyAll != null ? Transform(bodyAll,ref valueTransformOptions) : "")})";
-                case "AzureSearchIn":
+                case nameof(AzureFunctions.AzureSearchIn):
 
                     T CompileLambda<T>(Expression e)
                     {

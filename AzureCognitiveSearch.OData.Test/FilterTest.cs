@@ -89,6 +89,23 @@ public class FilterTest
     {
         Assert.Equal("ComplexArray/any(e:(e/TypeInt eq 4))",
             FilterExpressionWrapper<MyClass>(i => i.ComplexArray.Any(e => e.TypeInt == 4)));
+        
+        Assert.Equal("TypeArray/any(e:(e eq 4))",
+            FilterExpressionWrapper<MyClassB>(i => i.TypeArray.Any(e => e == 4)));
+    }
+    
+    [Fact]
+    public void Func_Any_WithFunc_Test()
+    {
+        
+        // Creates a param for any expression
+        var bodyParam =Expression.Parameter(typeof(int), "e");
+        // create the any expression body
+        var exp = Expression.Equal(bodyParam, Expression.Constant(4));
+        // Creates a lambda expression
+        var lambda = Expression.Lambda(exp, bodyParam) as Expression<Func<int,bool>>;
+        Assert.Equal("TypeArray/any(e:(e eq 4))",
+            FilterExpressionWrapper<MyClassB>(i => i.TypeArray.AsQueryable().Any(lambda)));
     }
 }
 
