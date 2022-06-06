@@ -69,6 +69,52 @@ public class AzureContextAttributes : IAzureContext
 
 This is a sample solution [DI sample](https://github.com/emmanuelrobles/AzureCognitiveSearchHelper/tree/master/Sample.AzureCognitiveSearch.DI)
 
+# Azure cognitive search DI (v2 - preview)
+
+## Features
+ - Provides fluent DI services to configure queryable Azure search services
+
+### Step 1 - Model index data
+
+Create a class to represent the azure search index document:
+
+ ```csharp  
+ 
+public class AzureModelIndex
+{
+
+}
+
+```
+
+### Step 2 - Register queryable services with fluent DI extensions
+
+Add DI services as follows:
+
+```csharp   
+services.AddAzureSearch(new Uri("https://your-endpoint.search.windows.net"), new AzureKeyCredential("--your-azure-key--"))
+        .WithQueryableIndex<AzureModelIndex>("--your-index-name--");
+
+```
+
+### Step 3 - Resolve queryable services
+
+Resolve your azure queryable for the specified model using constructor injection where you see fit as follows:
+
+```csharp 
+
+public class DataContext
+{
+    private IAzureQueryable<AzureModelIndex> _baseQuery;
+
+    public AzureContext(IAzureQueryable<AzureModelIndex> queryable)
+    {
+        _baseQuery = queryable;
+    }
+}
+
+```
+Note: Leverage fluent operations and build custom DSL to compose search index queries. 
 
 
 
