@@ -126,7 +126,7 @@ public static class DI
         collection.AddScoped(_ => Builder());
     }
 
-    public static IAzureQueryBuilder AddAzureSearch(this IServiceCollection services, Uri serviceEndpoint, AzureKeyCredential credential, Action<SearchClientOptions> configure)
+    public static IAzureQueryBuilder AddAzureSearch(this IServiceCollection services, Uri serviceEndpoint, AzureKeyCredential credential, Action<SearchClientOptions>? configure = null)
     {
         if (configure == null)
         {
@@ -135,7 +135,7 @@ public static class DI
 
         // Configure options
         var options = new SearchClientOptions();
-        configure(options);
+        configure?.Invoke(options);
 
         services.AddSingleton<SearchIndexClient>(sp =>
         {
@@ -147,7 +147,7 @@ public static class DI
         return new AzureQueryBuilder(serviceName, services);
     }
 
-    public static IAzureQueryBuilder WithIndex<TIndexModel>(this IAzureQueryBuilder builder, string indexName, Action<AzureSearchOptions> configure = null) where TIndexModel : class
+    public static IAzureQueryBuilder WithQueryableIndex<TIndexModel>(this IAzureQueryBuilder builder, string indexName, Action<AzureSearchOptions>? configure = null) where TIndexModel : class
     {
         var services = builder.Services;
 
