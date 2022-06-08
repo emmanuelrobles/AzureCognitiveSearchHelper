@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
+using Azure;
+using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using AzureCognitiveSearch.Abstractions;
 using AzureCognitiveSearch.Applications.Contexts;
@@ -11,6 +13,7 @@ using AzureCognitiveSearch.DI.FromNugetPackage.Attributes;
 using AzureCognitiveSearch.DI.FromNugetPackage.ModelBuilder;
 using AzureCognitiveSearch.OData;
 using AzureCognitiveSearch.QueryRunnerV1;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AzureCognitiveSearch.DI.FromNugetPackage;
@@ -18,7 +21,7 @@ namespace AzureCognitiveSearch.DI.FromNugetPackage;
 /// <summary>
 /// Default options
 /// </summary>
-class AzureSearchOptions : IAzureSearchOptions
+public class AzureSearchOptions : IAzureSearchOptions
 {
     /// <summary>
     /// Default pagination func
@@ -58,9 +61,7 @@ public static class DI
     /// <param name="instanceBuilder"></param>
     /// <typeparam name="TContext"></typeparam>
     /// <exception cref="ArgumentException"></exception>
-    public static void AddAzureSearchContext<TContext>(this IServiceCollection collection, SearchIndexClient indexClient,
-        Action<IAzureSearchOptions>? optionsCallBack = null,
-        Func<TContext>? instanceBuilder = null)
+    public static void AddAzureSearchContext<TContext>(this IServiceCollection collection, SearchIndexClient indexClient, Action<IAzureSearchOptions>? optionsCallBack = null, Func<TContext>? instanceBuilder = null)
         where TContext : class, IAzureContext
     {
         // set default options
@@ -125,6 +126,63 @@ public static class DI
         collection.AddScoped(_ => Builder());
     }
 
+    public static IAzureQueryBuilder AddAzureSearch(this IServiceCollection services, Uri serviceEndpoint, AzureKeyCredential credential, Action<SearchClientOptions>? configure = null)
+    {
+        if (configure == null)
+        {
+            throw new ArgumentNullException(nameof(configure));
+        }
+
+        // Configure options
+        var options = new SearchClientOptions();
+        configure?.Invoke(options);
+
+        services.AddSingleton<SearchIndexClient>(sp =>
+        {
+            return new SearchIndexClient(serviceEndpoint, credential, options);
+        });
+
+        var serviceName = GetSearchServiceName(serviceEndpoint);
+
+        return new AzureQueryBuilder(serviceName, services);
+    }
+
+    public static IAzureQueryBuilder WithQueryableIndex<TIndexModel>(this IAzureQueryBuilder builder, string indexName, Action<AzureSearchOptions>? configure = null) where TIndexModel : class
+    {
+        var services = builder.Services;
+
+        if (configure != null)
+        {
+            services.Configure(indexName, configure);
+        }
+
+        services.AddTransient<IAzureQueryable<TIndexModel>>(sp =>
+        {
+            // Retreive search client
+            var searchClient = sp.GetRequiredService<SearchClient>();
+
+            // With associated search options
+            var searchOptions = sp.GetRequiredService<IOptionsMonitor<AzureSearchOptions>>().Get(indexName);
+
+            // Create query runner
+            var queryRunner = new ValueAzureSearchQueryRunner<TIndexModel>(searchClient, searchOptions);
+
+            // Create query provider
+            var queryProvider = new ValueAzureQueryProvider(queryRunner);
+
+            return new AzureQueryable<TIndexModel>(queryProvider, null);
+        });
+
+        services.AddTransient<SearchClient>(sp =>
+        {
+            var searchClientFactory = sp.GetRequiredService<IEnumerable<SearchIndexClient>>()
+                                        .Single(x => x.ServiceName == builder.Name);
+
+            return searchClientFactory.GetSearchClient(indexName);
+        });
+        return builder;
+    }
+
     private static IEnumerable<IProperty> GetModelFromPropertiesAttributes(IEnumerable<PropertyInfo> propertyInfos)
     {
         foreach (var propertyInfo in propertyInfos)
@@ -149,4 +207,31 @@ public static class DI
             yield return new ValueProperty(propertyInfo, new PropertySettings(indexNameAttribute.IndexName));
         }
     }
+
+    private static string GetSearchServiceName(this Uri endpoint)
+    {
+        string host = endpoint.Host;
+        int separator = host.IndexOf('.');
+        return (separator > 0) ? host.Substring(0, separator) : null;
+    }
+}
+
+public interface IAzureQueryBuilder
+{
+    public string Name { get; }
+
+    IServiceCollection Services { get; }
+}
+
+class AzureQueryBuilder : IAzureQueryBuilder
+{
+    public AzureQueryBuilder(string name, IServiceCollection services)
+    {
+        Name = name;
+        Services = services;
+    }
+
+    public string Name { get; init; }
+
+    public IServiceCollection Services { get; init; }
 }
