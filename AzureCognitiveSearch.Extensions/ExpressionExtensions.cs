@@ -68,28 +68,7 @@ public static class ExpressionExtensions
                 queryable.Expression, Expression.Constant(includeCount)
             ));
     }
-    
-    /// <summary>
-    ///  Adds a Facet
-    /// </summary>
-    /// <param name="queryable"></param>
-    /// <param name="facetBuilder"></param>
-    /// <typeparam name="TSource"></typeparam>
-    /// <returns></returns>
-    public static IAzureQueryable<TSource> WithFacet<TSource>(this IAzureQueryable<TSource> queryable, IFacetBuilder facetBuilder)
-    {
-        static MethodInfo GetMethodInfo(Type TSource) =>
-            new Func<IAzureQueryable<TSource>, IFacetBuilder, IAzureQueryable<TSource>>(WithFacet).GetMethodInfo().GetGenericMethodDefinition()
-                .MakeGenericMethod(TSource);
-        
-        return queryable.Provider.CreateQuery<TSource>(
-            Expression.Call(
-                null,
-                GetMethodInfo(typeof(TSource)),
-                queryable.Expression, Expression.Constant(facetBuilder)
-            ));
-    }
-    
+
     /// <summary>
     /// Sets the Items per page
     /// </summary>

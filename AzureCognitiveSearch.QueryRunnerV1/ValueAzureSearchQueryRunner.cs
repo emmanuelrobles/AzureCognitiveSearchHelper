@@ -82,11 +82,11 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         // initial facet mapping
         Dictionary<string, IEnumerable<IFacetResult>>? ToDomain(IDictionary<string, IList<FacetResult>>? facets)
             => facets?.ToDictionary(kv => kv.Key, kv =>
-                kv.Value.Select(f => new ValueFacetResult
+                kv.Value.Select(f => options.FacetMapper?.Invoke(f) ?? new ValueFacetResult
                 {
                     Count = f.Count,
                     Value = kv.Key
-                } as IFacetResult)) ?? null;
+                })) ?? null;
 
         // returns object
         return new ValuePaginationResult<TResult>
@@ -135,15 +135,23 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
                 acc.SearchOptions.IncludeTotalCount = bool.Parse(countExpression?.Value?.ToString() ?? "false");
                 // solve rest of expressions
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
-            case nameof(ExpressionExtensions.WithFacet):
+            case nameof(QueryRunnerExtensions.WithFacet):
                 // get facet expression
                 var facetExpression = methodCall.Arguments[1] as ConstantExpression;
                 // get facet value
-                var facet = (facetExpression?.Value as IFacetBuilder)?.BuildFacet() ?? string.Empty;
+                var facet = facetExpression?.Value as string ?? string.Empty;
                 // if facet exist added to the list
                 if (!string.IsNullOrEmpty(facet))
                 {
                     acc.SearchOptions.Facets.Add(facet);
+                }
+                // solve rest of expressions
+                return ref GetOptions(methodCall.Arguments[0], ref acc);
+            case nameof(QueryRunnerExtensions.WithFacetMapper):
+                // get facet expression
+                if (methodCall.Arguments[1] is ConstantExpression facetMapperExpression)
+                {
+                    acc.FacetMapper = (Func<FacetResult, IFacetResult>?)facetMapperExpression.Value;
                 }
                 // solve rest of expressions
                 return ref GetOptions(methodCall.Arguments[0], ref acc);
@@ -242,7 +250,13 @@ public readonly struct ValueAzureSearchQueryRunner<TEntity> : IAzureQueryRunner
         /// <summary>
         /// Selectable pipe
         /// </summary>
-        public Func<object,object> Selectable { get; set; } = null;
+        public Func<object, object>? Selectable { get; set; } = null;
+        
+        /// <summary>
+        /// Selectable pipe
+        /// </summary>
+        public Func<FacetResult, IFacetResult>? FacetMapper { get; set; } = null;
+        
         /// <summary>
         /// How many Items per page
         /// </summary>
