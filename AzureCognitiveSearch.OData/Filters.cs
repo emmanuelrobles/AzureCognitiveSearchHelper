@@ -156,6 +156,7 @@ public static class Filters
         Dictionary<Type, Func<string>> dictionary = new()
         {
             { typeof(string), () => $"'{expression.Value}'" },
+            { typeof(bool), () => $"{expression.Value.ToString().ToLower()}" },
         };
         var expressionType = expression.Value.GetType();
         //handle special case

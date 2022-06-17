@@ -26,8 +26,9 @@ public class FilterTest
         Assert.Equal("(i ge 4)", FilterExpressionWrapper<int>(i => i >= 4));
         Assert.Equal("(i lt 4)", FilterExpressionWrapper<int>(i => i < 4));
         Assert.Equal("(i le 4)", FilterExpressionWrapper<int>(i => i <= 4));
-        Assert.Equal("((i eq True) or i)", FilterExpressionWrapper<bool>(i => i == true || i));
-        Assert.Equal("((i eq True) and i)", FilterExpressionWrapper<bool>(i => i == true && i));
+        Assert.Equal("((i eq true) or i)", FilterExpressionWrapper<bool>(i => i == true || i));
+        Assert.Equal("((i eq true) and i)", FilterExpressionWrapper<bool>(i => i == true && i));
+        Assert.Equal("(i eq false)", FilterExpressionWrapper<bool>(i => i == false));
 
         Assert.Equal("(i eq 'a string')", FilterExpressionWrapper<string>(i => i == str));
         Assert.Equal("(i ne 'a string')", FilterExpressionWrapper<string>(i => i != str));
