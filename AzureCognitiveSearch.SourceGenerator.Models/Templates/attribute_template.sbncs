@@ -1,0 +1,9 @@
+namespace {{namespacevalue}};
+
+[System.AttributeUsage(System.AttributeTargets.Property)]  
+public class {{name}} : System.Attribute  
+{
+    public {{name}}()  
+    {  
+    }  
+}  
