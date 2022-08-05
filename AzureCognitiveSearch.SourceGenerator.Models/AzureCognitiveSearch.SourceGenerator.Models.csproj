@@ -12,7 +12,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
-        <PackageReference Include="Scriban" Version="5.5.0" GeneratePathProperty="true"/>
+        <PackageReference Include="Scriban" Version="5.5.0" GeneratePathProperty="true" />
+        <PackageReference Include="System.Text.Json" Version="6.0.5" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -28,7 +29,7 @@
     </Target>
     
     <ItemGroup>
-        <EmbeddedResource Include="@(None -> WithMetadataValue('Extension', '.sbncs'))" />
+        <EmbeddedResource Include="@(None -&gt; WithMetadataValue('Extension', '.sbncs'))" />
     </ItemGroup>
     
 </Project>

@@ -1,4 +1,6 @@
-namespace {{namespacevalue}};
+//This is a generated class. DO NOT MODIFY
+
+namespace {{namespacevalue}}.Attributes;
 
 [System.AttributeUsage(System.AttributeTargets.Property)]  
 public class {{name}} : System.Attribute  

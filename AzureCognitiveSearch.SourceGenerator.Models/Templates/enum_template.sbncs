@@ -1,0 +1,19 @@
+namespace {{template.namespace}}.Enums;
+
+public enum {{template.name}}Enum
+{
+{{-for v in template.values}}
+    {{v.enum_value}},
+{{-end}}
+}
+
+public static class {{template.name}}Extensions
+{
+    public static string {{template.name}}ToValue(this {{template.name}}Enum @enum)
+     => @enum switch {
+     {{-for v in template.values}}
+        {{template.name}}Enum.{{v.enum_value}} => "{{v.string_value}}",
+     {{-end}}
+        _ => string.Empty
+     };
+}

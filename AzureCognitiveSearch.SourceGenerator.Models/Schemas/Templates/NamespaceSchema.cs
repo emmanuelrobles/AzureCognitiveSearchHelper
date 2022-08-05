@@ -7,11 +7,13 @@ namespace AzureCognitiveSearch.SourceGenerator.Models.Schemas.Templates
         public string Name { get; }
 
         public IEnumerable<ClassSchema> Classes { get; }
+        public IEnumerable<string> Usings { get; }
 
-        public NamespaceSchema(string name, IEnumerable<ClassSchema> classes)
+        public NamespaceSchema(string name, IEnumerable<ClassSchema> classes, IEnumerable<string> usings)
         {
             Name = name;
             Classes = classes;
+            Usings = usings;
         }
     }
 }

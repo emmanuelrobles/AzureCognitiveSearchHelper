@@ -1,17 +1,19 @@
 // This is a generated class, DO NOT MODIFY
+{{~ for using in namespace.usings ~}}
+using {{using}};
+{{~ end ~}}
+namespace {{namespace.name}}.Models;
 
-namespace {{namespace.Name}};
+{{~ for class in namespace.classes ~}}
+public class {{class.name}}
+{   
+    {{- for prop in class.properties ~}}
+    
+    {{~ for attr in prop.attributes}}
+    [{{attr.name}}]
+    {{- end}}
+    public {{prop.type}} {{prop.name}} {get; init;}   
+    {{- end}}
+}
 
-{{for class in namespace.Classes}}
-    public class {{class.Name}}
-    {
-        {{for prop in class.Properties}}
-            
-            {{for attr in prop.Attribute}}
-            [attr.Name]
-            {{end}}
-            public {{prop.Type}} {{prop.Name}} {get; init;}
-            
-        {{end}}
-    }
 {{end}}
