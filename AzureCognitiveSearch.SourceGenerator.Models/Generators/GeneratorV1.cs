@@ -108,47 +108,4 @@ public class GeneratorV1 : IIncrementalGenerator
         }
     }
 
-    static PropertyDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context, string propertyType)
-    {
-        var propDeclarationSyntax = (PropertyDeclarationSyntax)context.Node;
-        
-        // loop through all the attributes on the method
-        foreach (AttributeListSyntax attributeListSyntax in propDeclarationSyntax.AttributeLists)
-        {
-            foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-            {
-                IMethodSymbol attributeSymbol = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol as IMethodSymbol;
-                if (attributeSymbol == null)
-                {
-                    // weird, we couldn't get the symbol, ignore it
-                    continue;
-                }
-
-                INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                string fullName = attributeContainingTypeSymbol.ToDisplayString();
-
-                if (fullName == propertyType)
-                {
-                    // return the parent class of the method
-                    return propDeclarationSyntax;
-                }
-            }
-        }
-
-        return null;
-    }
-    
-    private static void Execute(Compilation compilation, ImmutableArray<PropertyDeclarationSyntax> prop, SourceProductionContext context)
-    {
-        if (prop.IsDefaultOrEmpty)
-        {
-            // nothing to do yet
-            return;
-        }
-
-        IEnumerable<PropertyDeclarationSyntax> distinctClasses = prop.Distinct();
-
-        Console.WriteLine();
-    }
-
 }
